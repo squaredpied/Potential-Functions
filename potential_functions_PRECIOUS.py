@@ -76,30 +76,6 @@ def wavefront_planner_euclidean(map, goal):
     # Return the attraction potential map with updated values after wavefront expansion
     return attract_pot
 
-
-def check_neighbours(map, position):
-    x=map.shape[1]
-    y=map.shape[0]
-
-    possible=[]
-    if position[1]-1 >= 0 and (map[position[0],position[1]-1]==0):
-        possible.append((position[0],position[1]-1))
-    if position[0]-1 >=0 and (map[position[0]-1, position[1]]==0):
-        possible.append((position[0]-1,position[1]))
-    if position[1]+1 <x and (map[position[0],position[1]+1]==0):
-        possible.append((position[0],position[1]+1))
-    if position[0]+1<y and (map[position[0]+1,position[1]]==0):
-        possible.append((position[0]+1,position[1]))
-    if position[1]-1>=0 and position[0]-1>=0 and (map[position[0]-1,position[1]-1]==0):
-        possible.append((position[0]-1,position[1]-1))
-    if position[1]+1<x and position[0]-1>=0 and (map[position[0]-1,position[1]+1]==0):
-        possible.append((position[0]-1,position[1]+1))
-    if position[1]+1<x and position[0]+1<y and (map[position[0]+1,position[1]+1]==0):
-        possible.append((position[0]+1,position[1]+1))
-    if position[1]-1>=0 and position[0]+1<y and (map[position[0]+1,position[1]-1]==0):
-        possible.append((position[0]+1,position[1]-1))
-    return possible
-
 # Function to perform Brushfire algorithm on a binary map
 def brushfire(map):
     # Find the coordinates of obstacle cells (value 1) in the map
@@ -141,6 +117,7 @@ def brushfire(map):
 
 
 def find_minimum(attract_function, pos):
+    # Gets the neighbour of a cell with the minimum potential
     minimum=pos
     if pos[1]-1 >= 0 and attract_function[pos[0],pos[1]-1]!=1 and attract_function[pos[0],pos[1]-1]<attract_function[pos[0],pos[1]]:
         minimum=(pos[0],pos[1]-1)
@@ -203,41 +180,51 @@ if __name__=="__main__":
 
     X=wavefront_planner_euclidean(grid_map.copy(), end_point)
     path=find_the_path(X,start_point)
-    # print("Path = ", path)
+    print("Path using the attraction function = ", path)
     dis_to_obs=brushfire(grid_map.copy())
     repulse=repulsive_function(dis_to_obs.copy(),int(sys.argv[6]))
 
     potential=potential_function(X,repulse)
-    # print(potential[90,70])
     sec_path=find_the_path(potential,start_point)
-    print("Path = ", sec_path)
+    print('\n\n')
+    print("Path using potential function = ", sec_path)
     path2=potential.copy()
-    for x,y in sec_path:
-        path2[x,y]=2
 
+    #show the grid map
     plt.matshow(grid_map)
     plt.colorbar()
 
+    #show the attraction function
     plt.matshow(X)
     plt.colorbar()
 
     path1=X.copy()
-    for x,y in path:
-        path1[x,y]=0.5
+
+    #show the path to goal using the attraction function
     plt.matshow(path1)
+    xax=[i for i,j in path]
+    yax=[j for i,j in path]
+    plt.plot(yax,xax, c='r')
     plt.scatter([start_point[1],end_point[1]],[start_point[0],end_point[0]],marker='+',c='r')
     plt.colorbar()
 
+    #show brushfire result
     plt.matshow(dis_to_obs)
     plt.colorbar()
 
+    #Plot the repulsive function
     plt.matshow(repulse)
     plt.colorbar()
 
+    #plot the potential function
     plt.matshow(potential)
     plt.colorbar()
 
+    #plot the path to goal using the potential function
     plt.matshow(path2)
+    xax=[i for i,j in sec_path]
+    yax=[j for i,j in sec_path]
+    plt.plot(yax,xax, c='r')
     plt.scatter([start_point[1],end_point[1]],[start_point[0],end_point[0]],marker='+',c=['r','g'])
     plt.colorbar()
     plt.show()
